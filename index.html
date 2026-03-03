@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerAI — Mzansi's AI Job Agent</title>
+
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a class="nav-brand" href="#">
+      <div class="nav-mark"></div>
+      <span class="nav-title">Career<em>AI</em></span>
+    </a>
+    <div class="nav-right">
+      <span class="nav-pill">🇿🇦 SA · FREE</span>
+      <span class="nav-live"><span class="live-dot"></span>Live</span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-content">
+      <div class="hero-parallax" id="heroParallax">
+        <div class="hero-eyebrow">
+          <span class="live-dot"></span>AI-Powered · South Africa · 100% Free
+        </div>
+        <h1 class="hero-h1">
+          Your next job,<br>
+          <span class="gold">found</span> &amp; <span class="stroke">applied</span>
+        </h1>
+        <p class="hero-sub">
+          Upload your CV. CareerAI reads it, finds matching South African jobs, writes your
+          personalised cover letter and ATS resume as
+          <strong style="color:var(--white)">professional PDFs</strong> — ready to send.
+        </p>
+        <a class="hero-cta" href="#app" onclick="smoothScroll('app'); return false;">
+          Upload Your CV &nbsp;↓
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="app" style="padding-top:60px;">
+    <div class="content">
+
+      <!-- WIZARD -->
+      <div class="wizard reveal" id="wizardEl">
+        <div class="ws active" id="ws1"><div class="wn">1</div><span>Upload</span></div>
+        <div class="wl" id="wl1"></div>
+        <div class="ws" id="ws2"><div class="wn">2</div><span>Analyse</span></div>
+        <div class="wl" id="wl2"></div>
+        <div class="ws" id="ws3"><div class="wn">3</div><span>Jobs</span></div>
+        <div class="wl" id="wl3"></div>
+        <div class="ws" id="ws4"><div class="wn">4</div><span>Generate</span></div>
+        <div class="wl" id="wl4"></div>
+        <div class="ws" id="ws5"><div class="wn">5</div><span>Send</span></div>
+      </div>
+
+      <!-- STEP 1: UPLOAD -->
+      <div id="sec-upload" class="card reveal">
+        <div class="card-title">📄 Upload your CV</div>
+        <p class="card-sub">
+          Drop your CV and CareerAI handles everything — reads your profile, matches jobs, generates a
+          professional <strong style="color:var(--white)">cover letter PDF</strong> and
+          <strong style="color:var(--white)">ATS resume PDF</strong>, then opens your email ready to send.
+        </p>
+
+        <div class="upload-zone" id="uploadZone">
+          <input
+            type="file" id="cvFileInput" accept=".txt,.pdf,.docx,.doc"
+            onchange="handleCV(this.files[0])"
+            ondragover="event.preventDefault(); document.getElementById('uploadZone').classList.add('over')"
+            ondragleave="document.getElementById('uploadZone').classList.remove('over')"
+            ondrop="event.preventDefault(); document.getElementById('uploadZone').classList.remove('over'); handleCV(event.dataTransfer.files[0])"
+          >
+          <span class="uz-icon">📂</span>
+          <div class="uz-h">Click to browse or drag &amp; drop</div>
+          <p class="uz-p">Supports PDF, DOCX, and TXT. CareerAI reads your CV, finds matching SA jobs, and generates professional PDF documents ready to email.</p>
+          <div class="uz-badges">
+            <span class="uz-badge">PDF</span>
+            <span class="uz-badge">DOCX</span>
+            <span class="uz-badge">TXT</span>
+            <span class="uz-badge">Max 15 MB</span>
+          </div>
+        </div>
+
+        <div id="cvLoadedWrap" class="hidden" style="margin-top:18px">
+          <div class="cv-row">
+            <div class="cv-ico">✅</div>
+            <div class="cv-info">
+              <div class="cv-name" id="cvName">Loading…</div>
+              <div class="cv-meta" id="cvMeta"></div>
+              <div class="cv-preview" id="cvPreview"></div>
+            </div>
+            <button class="btn btn-ghost btn-xs" onclick="resetAll()" style="flex-shrink:0;align-self:flex-start">✕</button>
+          </div>
+          <div class="prog hidden" id="progWrap">
+            <div class="prog-row"><span id="progLabel">Analysing…</span><span id="progPct">0%</span></div>
+            <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+          </div>
+          <div class="btn-row" style="margin-top:18px">
+            <button class="btn btn-gold" id="analyseBtn" onclick="analyseCV()" style="flex:1;min-width:200px">
+              🤖 Analyse CV &amp; Find Matching Jobs
+            </button>
+            <button class="btn btn-ghost btn-sm" onclick="resetAll()">Upload Different CV</button>
+          </div>
+        </div>
+
+        <div class="warn-box">
+          ⚠️ Best results with <strong>text-based PDF</strong> or <strong>DOCX</strong>.
+          Scanned/image PDFs cannot extract text — save as .txt as fallback.
+        </div>
+      </div>
+
+      <!-- STEP 2: AGENT LOG + PROFILE -->
+      <div id="sec-analysis" class="hidden">
+        <div class="card reveal">
+          <div class="sh">🤖 Agent</div>
+          <div class="log" id="logBox"></div>
+        </div>
+        <div class="card reveal gold-accent" id="profileCard" style="display:none">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+            <div>
+              <div class="card-title" style="margin-bottom:4px">
+                👤 Your Profile
+                <span class="badge badge-green" style="font-size:11px;margin-left:8px">Auto-filled from CV</span>
+              </div>
+              <p style="font-size:13px;color:var(--muted)">Review and edit before we search</p>
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="findJobs()">Find Matching Jobs →</button>
+          </div>
+          <div class="pgrid">
+            <div class="field"><label>Full Name</label><input id="p-name" placeholder="Jane Dlamini"></div>
+            <div class="field"><label>Email</label><input id="p-email" type="email" placeholder="jane@email.co.za"></div>
+            <div class="field"><label>Phone</label><input id="p-phone" placeholder="+27 82 000 0000"></div>
+            <div class="field"><label>Years Experience</label><input id="p-years" type="number" placeholder="5" min="0"></div>
+            <div class="field"><label>Current Title</label><input id="p-title" placeholder="Software Engineer"></div>
+            <div class="field"><label>Education</label><input id="p-edu" placeholder="BCom, UNISA"></div>
+            <div class="field pfull"><label>Key Skills</label><input id="p-skills" placeholder="Python, Project Management, AutoCAD…"></div>
+            <div class="field pfull"><label>Certifications &amp; Licences</label><input id="p-certs" placeholder="SAICA, HPCSA, PMP, Driver's Licence B…"></div>
+            <div class="field pfull"><label>Career Summary</label><textarea id="p-summary"></textarea></div>
+            <div class="field pfull"><label>Key Achievements</label><textarea id="p-ach"></textarea></div>
+            <div class="field"><label>Location</label><input id="p-loc" value="South Africa"></div>
+            <div class="field"><label>Salary Expectation</label><input id="p-salary" placeholder="R35 000 – R55 000 pm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: MATCHED JOBS -->
+      <div id="sec-jobs" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div class="sh" style="margin:0" id="jobsHead">Matched Jobs</div>
+          <span id="jobsCnt" class="badge badge-gold"></span>
+        </div>
+        <div class="jobs-list" id="jobsList"></div>
+      </div>
+
+      <!-- STEPS 4 & 5: DOCUMENTS + SEND -->
+      <div id="sec-output" class="hidden">
+        <div class="sh">Application Package</div>
+
+        <div class="ocard reveal">
+          <div class="otabs">
+            <button class="otab on" onclick="switchTab('cover')">Cover Letter</button>
+            <button class="otab"    onclick="switchTab('resume')">ATS Resume</button>
+            <button class="otab"    onclick="switchTab('email')">Email Draft</button>
+            <button class="otab"    onclick="switchTab('analysis')">Analysis</button>
+            <button class="otab"    onclick="switchTab('improved')">Improved CV</button>
+          </div>
+          <div id="ot-cover"    class="ocontent empty"><div class="eico">✍️</div><p>Click <strong>Generate &amp; Apply</strong> on a job card</p></div>
+          <div id="ot-resume"   class="ocontent empty hidden"><div class="eico">📋</div><p>ATS resume will appear here</p></div>
+          <div id="ot-email"    class="ocontent empty hidden"><div class="eico">📧</div><p>Email draft will appear here</p></div>
+          <div id="ot-analysis" class="ocontent empty hidden"><div class="eico">🔍</div><p>Job fit analysis will appear here</p></div>
+          <div id="ot-improved" class="ocontent empty hidden"><div class="eico">⬆️</div><p>Improved CV will appear here</p></div>
+          <div class="oactions" id="oActs" style="display:none">
+            <button class="btn btn-ghost btn-sm" onclick="copyActive()">Copy</button>
+            <button class="btn btn-outline btn-sm" onclick="dlActiveTxt()">Download .txt</button>
+          </div>
+        </div>
+
+        <!-- Send Panel -->
+        <div class="send-panel reveal" id="sendPanel" style="display:none">
+          <div class="sp-title">📨 Send Your Application</div>
+          <p class="sp-sub">
+            Fill in your details. Clicking
+            <strong style="color:var(--white)">"Open Email + Download PDFs"</strong>
+            opens your email client pre-filled and downloads two professional PDFs —
+            attach them before hitting Send.
+          </p>
+          <div class="sp-grid">
+            <div class="sp-field">
+              <label>To — Recruiter Email</label>
+              <input id="sp-to" type="email" placeholder="recruiter@company.co.za">
+            </div>
+            <div class="sp-field">
+              <label>From — Your Email</label>
+              <input id="sp-from" type="email" placeholder="jane@email.co.za">
+            </div>
+            <div class="sp-field sp-full">
+              <label>Subject Line</label>
+              <input id="sp-subject" placeholder="Application: Role at Company">
+            </div>
+          </div>
+
+          <div class="pdf-badges" id="pdfBadges">
+            <div class="pdf-badge">
+              <div class="pdf-badge-ico">📄</div>
+              <div class="pdf-badge-info">
+                <div class="pdf-badge-name" id="coverPdfName">Cover_Letter.pdf</div>
+                <div class="pdf-badge-meta">Professional · Personalised · Ready to attach</div>
+              </div>
+              <div class="pdf-badge-check" id="coverCheck" style="display:none">✓</div>
+            </div>
+            <div class="pdf-badge">
+              <div class="pdf-badge-ico">📋</div>
+              <div class="pdf-badge-info">
+                <div class="pdf-badge-name" id="resumePdfName">ATS_Resume.pdf</div>
+                <div class="pdf-badge-meta">ATS-optimised · Job-tailored · Ready to attach</div>
+              </div>
+              <div class="pdf-badge-check" id="resumeCheck" style="display:none">✓</div>
+            </div>
+          </div>
+
+          <div class="dl-note">
+            <span class="dl-note-ico">📎</span>
+            <div>Both PDFs download automatically when you click the button below.
+            Open your email client, <strong style="color:var(--white)">attach both files</strong>, and hit Send.</div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-gold" onclick="sendApplication()" style="flex:1;padding:14px">
+              📧 Open Email + Download PDFs
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="dlCoverPDF()">⬇ Cover Letter PDF</button>
+            <button class="btn btn-outline btn-sm" onclick="dlResumePDF()">⬇ ATS Resume PDF</button>
+          </div>
+          <div class="sp-status" id="spStatus"></div>
+        </div>
+
+      </div><!-- /sec-output -->
+
+    </div><!-- /content -->
+  </div><!-- /app -->
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Career<em>AI</em></div>
+    <div class="footer-divider"></div>
+    <div class="footer-creator">Built with care by <strong>Francis Mujakachi</strong></div>
+    <div class="footer-sub">
+      AI Job Matching &nbsp;·&nbsp; ATS Resume Builder &nbsp;·&nbsp;
+      Professional PDF Generation &nbsp;·&nbsp; 100% Free<br>
+      Powered by Groq Llama 3.3 &nbsp;·&nbsp;
+      <a href="mailto: fmujakachi@gmail.com">fmujakachi@gmail.com</a>
+    </div>
+    <div class="footer-copy">© 2025 Francis Mujakachi · CareerAI South Africa · All rights reserved</div>
+  </footer>
+
+  <!-- App Logic -->
+  <script src="app.js"></script>
+
+</body>
+</html>
