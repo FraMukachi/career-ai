@@ -179,7 +179,7 @@ Each Groq call is tuned for a specific output type:
 ## Credits
 
 Built by **Francis Mujakachi**
-Email: [info@careerai.co.za](mailto:info@careerai.co.za)
+Email: [fmujakachi@gmail.com].(mailto: fmujakachi@gmail.com)
 
 Powered by [Groq](https://groq.com) · [Llama 3.3](https://ai.meta.com/blog/llama-3/) · [jsPDF](https://github.com/parallax/jsPDF) · [PDF.js](https://mozilla.github.io/pdf.js/) · [Mammoth.js](https://github.com/mwilliamson/mammoth.js)
 
